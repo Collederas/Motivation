@@ -7,7 +7,7 @@
 #include "ActivatableInterface.generated.h"
 
 
-UINTERFACE(MinimalAPI, Blueprintable)
+UINTERFACE(MinimalAPI, Blueprintable, BlueprintType)
 class UActivatableInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -19,5 +19,5 @@ class UNREALMOTIVATION_API IActivatableInterface
 
 public:
 UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Activatable Interface")
-void Activate();
+void Activate(AActor* Sender);
 };
