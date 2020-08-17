@@ -8,6 +8,11 @@
 		}
 	],
 	"settings": {
-		"typescript.tsc.autoDetect": "off"
+		"typescript.tsc.autoDetect": "off",
+		"files.associations": {
+			"*.ipp": "cpp",
+			"typeindex": "cpp",
+			"typeinfo": "cpp"
+		}
 	}
 }
