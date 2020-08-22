@@ -21,7 +21,7 @@ public:
 	UInventoryComponent();
 
 	UPROPERTY(EditDefaultsOnly, Instanced, BlueprintReadWrite, Category = "Inventory")
-	TArray<class UItem*> items;
+	TArray<class UItem*> Items;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	virtual void UseItem(UItem* item);

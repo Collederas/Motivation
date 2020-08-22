@@ -26,6 +26,7 @@ void UInventoryComponent::Add(UItem *item)
 
 	FString string = FString::Format(TEXT("Adding {0} to inventory"), args);
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, string);
+	Items.Add(item);
 }
 
 void UInventoryComponent::Remove()
@@ -35,11 +36,17 @@ void UInventoryComponent::Remove()
 
 void UInventoryComponent::GetContent()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Getting inventory conent"));
+	for (UItem* item: Items) {
+		FString itemName = item->name.ToString();
+		TArray<FStringFormatArg> args;
+		args.Add(FStringFormatArg(itemName));
+		FString string = FString::Format(TEXT("{0}"), args);
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, string);
+	}
+
 }
 
 void UInventoryComponent::UseItem(UItem* item)
 {
 	OnItemUsed.Broadcast(item);
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Broadcasting like crazyyy!!"));
 }
