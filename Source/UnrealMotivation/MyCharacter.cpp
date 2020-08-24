@@ -63,7 +63,7 @@ void AMyCharacter::BeginPlay()
 
 void AMyCharacter::OnItemUsed(UItem* item)
 {
-	FString itemName = item->name.ToString();
+	FString itemName = item->Name.ToString();
 	TArray<FStringFormatArg> args;
 	args.Add(FStringFormatArg(itemName));
 

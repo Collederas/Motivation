@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "GunProjectileBase.h"
 #include "Item.generated.h"
 
 /**
@@ -16,11 +17,14 @@ class UNREALMOTIVATION_API UItem : public UObject
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Item")
- 	static UItem* Make(FString name);
+ 	static UItem* Make(FString Name, TSubclassOf<AGunProjectileBase> ClassType);
 
 public:
 	UItem();
 
 	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
-	FText name;
+	FText Name;
+
+	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
+	TSubclassOf<AGunProjectileBase> ClassType;
 };

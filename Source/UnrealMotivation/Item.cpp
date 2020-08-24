@@ -5,12 +5,13 @@
 
 UItem::UItem()
 {
-    name = FText::FromString("Item name");
+    Name = FText::FromString("Item name");
 }
 
-UItem* UItem::Make(FString name)
+UItem* UItem::Make(FString Name, TSubclassOf<AGunProjectileBase> ClassType)
 {
     UItem* item = NewObject<UItem>();
-    item->name = FText::FromString(name);
+    item->Name = FText::FromString(Name);
+    item->ClassType = ClassType;
     return item;
 }

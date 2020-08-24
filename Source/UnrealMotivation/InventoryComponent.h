@@ -7,24 +7,23 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
-
 // UDELEGATE(BlueprintCallable, Category = "Inventory")
-DECLARE_EVENT_OneParam(UInventoryComponent, FOnItemUsed, UItem*);
+DECLARE_EVENT_OneParam(UInventoryComponent, FOnItemUsed, UItem *);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALMOTIVATION_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UInventoryComponent();
 
 	UPROPERTY(EditDefaultsOnly, Instanced, BlueprintReadWrite, Category = "Inventory")
-	TArray<class UItem*> Items;
+	TArray<class UItem *> Items;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void UseItem(UItem* item);
+	virtual void UseItem(UItem *item);
 
 	FOnItemUsed OnItemUsed;
 
@@ -33,11 +32,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void Add(UItem* item);
+	virtual void Add(UItem *item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void Remove();
+	virtual void RemoveItem(UItem* Item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void GetContent();
+	virtual TArray<class UItem *> GetContent();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	virtual bool IsEmpty();
 };

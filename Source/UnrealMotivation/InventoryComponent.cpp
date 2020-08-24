@@ -20,7 +20,7 @@ void UInventoryComponent::BeginPlay()
 
 void UInventoryComponent::Add(UItem *item)
 {
-	FString itemName = item->name.ToString();
+	FString itemName = item->Name.ToString();
 	TArray<FStringFormatArg> args;
 	args.Add(FStringFormatArg(itemName));
 
@@ -29,24 +29,22 @@ void UInventoryComponent::Add(UItem *item)
 	Items.Add(item);
 }
 
-void UInventoryComponent::Remove()
+void UInventoryComponent::RemoveItem(UItem* Item)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Removing from inventory"));
+	Items.Remove(Item);
 }
 
-void UInventoryComponent::GetContent()
+TArray<class UItem *> UInventoryComponent::GetContent()
 {
-	for (UItem* item: Items) {
-		FString itemName = item->name.ToString();
-		TArray<FStringFormatArg> args;
-		args.Add(FStringFormatArg(itemName));
-		FString string = FString::Format(TEXT("{0}"), args);
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, string);
-	}
-
+	return Items;
 }
 
-void UInventoryComponent::UseItem(UItem* item)
+bool UInventoryComponent::IsEmpty()
+{
+	return Items.Num() > 0 ? false : true;
+}
+
+void UInventoryComponent::UseItem(UItem *item)
 {
 	OnItemUsed.Broadcast(item);
 }
