@@ -21,12 +21,18 @@ UCLASS()
 class UNREALMOTIVATION_API UFPCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
-	
-protected:
-	UPROPERTY(BlueprintReadWrite)
-	int test;
 
-	void PhysCustom(float deltaTime, int32 Iterations);
-	void PhysFalling(float deltaTime, int32 Iterations);
+public:
+	bool DoJump(bool bReplayingMoves) override;
+
+protected:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float SlidingFloorDistanceErrorTolerance;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float ForwardJumpMultiplier;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float SlidingJumpAirControl;
 };
 
