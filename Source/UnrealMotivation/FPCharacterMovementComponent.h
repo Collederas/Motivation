@@ -6,21 +6,14 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "FPCharacterMovementComponent.generated.h"
 
-/** Custom MovementMode options. */
-UENUM(BlueprintType)
-enum ECustomMovementMode
-{
-	/** Sliding down a non-walkable surface. */
-	MOVE_Sliding	UMETA(DisplayName="Sliding")
-};
-
 /**
- * Custom Movement Component that implements more MovementMode options.
+ * Custom Movement Component that sligthly tweaks the original to implement hopefully more engaging sliding gameplay.
  */
 UCLASS()
 class UNREALMOTIVATION_API UFPCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
+	UFPCharacterMovementComponent();
 
 public:
 	bool DoJump(bool bReplayingMoves) override;
@@ -32,7 +25,32 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float ForwardJumpMultiplier;
 
+	/** Determines what AirControl value to use when jumping while sliding on a slope. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float SlidingJumpAirControl;
+
+	/** Determines what AirControl value to use when sliding on slopes. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float SlidingAirControl;
+
+	/** Override to prevent reduction of the Z component when Impacing a slope after a jump and preserve momentum. */
+	FVector HandleSlopeBoosting(const FVector& SlideResult, const FVector& Delta, const float Time, const FVector& Normal, const FHitResult& Hit) const;
+
+	/** Override to increase AirControl. */
+	void PhysFalling(float deltaTime, int32 Iterations) override;
+
+	/** Override to restore AirControl. */
+	void ProcessLanded(const FHitResult& Hit, float remainingTime, int32 Iterations) override;
+
+	/**
+	 * Detect if the floor is closer than the provided DistanceCheck parameter
+	 *
+	 * @param DistanceCheck How close the floor should be for the check to return true.
+	 * @return Wether or not a floor was found within the given DistanceCheck constraint.
+	 */
+	bool IsFloorNear(float DistanceCheck = 0.05f);
+
+private:
+	float OriginalAirControl;
 };
 

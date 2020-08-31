@@ -7,7 +7,6 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
-// UDELEGATE(BlueprintCallable, Category = "Inventory")
 DECLARE_EVENT_OneParam(UInventoryComponent, FOnItemUsed, UItem *);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))

@@ -4,6 +4,11 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 
+UFPCharacterMovementComponent::UFPCharacterMovementComponent()
+{
+    OriginalAirControl = AirControl;
+}
+
 bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
 {
     if (CharacterOwner && CharacterOwner->CanJump())
@@ -11,16 +16,12 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
         // Don't jump if we can't move up/down.
         if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)
         {
-            FFindFloorResult FloorResult;
-            FVector CapsLoc = CharacterOwner->GetCapsuleComponent()->GetComponentLocation();
-            FindFloor(CapsLoc, FloorResult, false);
-            if (FloorResult.FloorDist > 0 && FMath::IsNearlyZero(FloorResult.FloorDist, 0.05f))
+            if (IsFloorNear())
             {
-                AirControl = SlidingJumpAirControl;
+                TGuardValue<float> RestoreAirControl(AirControl, SlidingJumpAirControl);
                 Velocity = CharacterOwner->GetActorForwardVector() * ForwardJumpMultiplier;
-				TGuardValue<float> RestoreJumpZVelocity(JumpZVelocity, JumpZVelocity + 500);
+                TGuardValue<float> RestoreJumpZVelocity(JumpZVelocity, JumpZVelocity + 500);
             }
-
 
             Velocity.Z = FMath::Max(Velocity.Z, JumpZVelocity);
             SetMovementMode(MOVE_Falling);
@@ -31,6 +32,29 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
     return false;
 }
 
+void UFPCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
+{
+    if (IsFloorNear())
+    {
+        AirControl = SlidingAirControl;
+    }
+    Super::PhysFalling(deltaTime, Iterations);
+}
+
+void UFPCharacterMovementComponent::ProcessLanded(const FHitResult &Hit, float remainingTime, int32 Iterations)
+{
+    Super::ProcessLanded(Hit, remainingTime, Iterations);
+    GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Yellow, FString::Printf(TEXT("AirControl: %d"), AirControl));
+    AirControl = OriginalAirControl;
+}
+
+bool UFPCharacterMovementComponent::IsFloorNear(float DistanceCheck)
+{
+    FFindFloorResult FloorResult;
+    FVector CapsLoc = CharacterOwner->GetCapsuleComponent()->GetComponentLocation();
+    FindFloor(CapsLoc, FloorResult, false);
+    return (FloorResult.FloorDist > 0 && FMath::IsNearlyZero(FloorResult.FloorDist, DistanceCheck));
+}
 
 // void UFPCharacterMovementComponent::PhysCustomSliding(float deltaTime, int32 Iterations)
 // {
@@ -57,19 +81,24 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
 //         SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
 //         // GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Yellow, FString::Printf(TEXT("Sliding and input is %d"), AnalogInputModifier));
 //     }
-    // float remainingTime = deltaTime;
+// float remainingTime = deltaTime;
 
-    // while ((remainingTime >= MIN_TICK_TIME) && Iterations < MaxSimulationIterations)
-    // {
-    //     Iterations++;
-    //     const float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
-    //     remainingTime -= timeTick;
+// while ((remainingTime >= MIN_TICK_TIME) && Iterations < MaxSimulationIterations)
+// {
+//     Iterations++;
+//     const float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
+//     remainingTime -= timeTick;
 
-    //     Velocity = FVector(-1000.0f, 0, 0);
-    //     FString DebugMsg = FString::Printf(TEXT("Velocity is set to %s"), *(Velocity.ToString()));
-    //     GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Yellow, DebugMsg);
-    //     //  UE_LOG(LogTemp, Warning, TEXT("Current: %s"), *(myResult.Location.ToString()));
-    // }
-
-    // SlideAlongSurface(Delta, 1.f - PercentTimeApplied, Hit.Normal, Hit, true);
+//     Velocity = FVector(-1000.0f, 0, 0);
+//     FString DebugMsg = FString::Printf(TEXT("Velocity is set to %s"), *(Velocity.ToString()));
+//     GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Yellow, DebugMsg);
+//     //  UE_LOG(LogTemp, Warning, TEXT("Current: %s"), *(myResult.Location.ToString()));
 // }
+
+// SlideAlongSurface(Delta, 1.f - PercentTimeApplied, Hit.Normal, Hit, true);
+// }
+
+FVector UFPCharacterMovementComponent::HandleSlopeBoosting(const FVector &SlideResult, const FVector &Delta, const float Time, const FVector &Normal, const FHitResult &Hit) const
+{
+    return SlideResult;
+}
