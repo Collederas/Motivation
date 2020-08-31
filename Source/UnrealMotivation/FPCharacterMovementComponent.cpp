@@ -18,9 +18,7 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
         {
             if (IsFloorNear())
             {
-                TGuardValue<float> RestoreAirControl(AirControl, SlidingJumpAirControl);
                 Velocity = CharacterOwner->GetActorForwardVector() * ForwardJumpMultiplier;
-                TGuardValue<float> RestoreJumpZVelocity(JumpZVelocity, JumpZVelocity + 500);
             }
 
             Velocity.Z = FMath::Max(Velocity.Z, JumpZVelocity);

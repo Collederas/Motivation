@@ -19,18 +19,12 @@ public:
 	bool DoJump(bool bReplayingMoves) override;
 
 protected:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float SlidingFloorDistanceErrorTolerance;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	/** What boost to give to the standard Jump velocity when jumping from a slope. */
+	UPROPERTY(Category="Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float ForwardJumpMultiplier;
 
-	/** Determines what AirControl value to use when jumping while sliding on a slope. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float SlidingJumpAirControl;
-
 	/** Determines what AirControl value to use when sliding on slopes. */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(Category="Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float SlidingAirControl;
 
 	/** Override to prevent reduction of the Z component when Impacing a slope after a jump and preserve momentum. */
