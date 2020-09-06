@@ -42,7 +42,6 @@ void UFPCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteration
 void UFPCharacterMovementComponent::ProcessLanded(const FHitResult &Hit, float remainingTime, int32 Iterations)
 {
     Super::ProcessLanded(Hit, remainingTime, Iterations);
-    GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Yellow, FString::Printf(TEXT("AirControl: %d"), AirControl));
     AirControl = OriginalAirControl;
 }
 

@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TriggerButton.h"
-#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ATriggerButton::ATriggerButton()
@@ -12,8 +11,6 @@ ATriggerButton::ATriggerButton()
 	ButtonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ButtonMesh"));
 	ButtonMesh->SetupAttachment(VisualMesh);
 
-	PressedLocation = ButtonMesh-> GetComponentLocation() - FVector(50, 0, 0);
-
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -21,10 +18,11 @@ ATriggerButton::ATriggerButton()
 void ATriggerButton::BeginPlay()
 {
 	Super::BeginPlay();
+	SetActorTickEnabled(false);
 }
 
 // Called every frame
-void ATriggerButton::Activate(AActor* Sender)
+void ATriggerButton::Activate_Implementation(AActor* Sender)
 {
 	SetActorTickEnabled(true);
 }
@@ -32,9 +30,6 @@ void ATriggerButton::Activate(AActor* Sender)
 void ATriggerButton::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	ButtonMesh->SetRelativeLocation(FMath::Lerp(ButtonMesh->GetComponentLocation(), PressedLocation), 0.01f);
-	if (ButtonMesh->GetComponentLocation() == PressedLocation)
-	{
-		SetActorTickEnabled(false);
-	}
+	FVector ButtonLocation = ButtonMesh->GetRelativeLocation();
+	ButtonMesh->SetRelativeLocation(FMath::Lerp(ButtonLocation, PressedLocation, 0.03f), false);
 }

@@ -7,7 +7,7 @@
 #include "ActivatableInterface.h"
 #include "TriggerButton.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class UNREALMOTIVATION_API ATriggerButton : public AActor, public IActivatableInterface
 {
 	GENERATED_BODY()
@@ -22,9 +22,10 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ButtonMesh;
 
-	FVector PressedLocation;
+	UPROPERTY(EditAnywhere)
+	FVector PressedLocation = FVector(-2, 0, 0);
 
-	void Activate(AActor* Sender);
+	void Activate_Implementation(AActor* Sender) override;
 
 protected:
 	virtual void BeginPlay() override;
