@@ -29,7 +29,7 @@ void ATriggerButton::Activate_Implementation(AActor *Sender)
 	// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Received input from: %s"), *Sender->GetName()));
 
 	IsActive = true;
-	ButtonMesh->SetMaterial(0, ActiveMaterial);
+	SetMaterial();
 
 	if (ControlledObjects.Num() > 0)
 	{
@@ -51,7 +51,7 @@ void ATriggerButton::Activate_Implementation(AActor *Sender)
 void ATriggerButton::Deactivate_Implementation(AActor *Sender)
 {
 	IsActive = false;
-	ButtonMesh->SetMaterial(0, OriginalMaterial);
+	SetMaterial();
 	if (ControlledObjects.Num() > 0)
 	{
 		for (int i = 0; i < ControlledObjects.Num(); i++)
@@ -66,5 +66,38 @@ void ATriggerButton::Deactivate_Implementation(AActor *Sender)
 				UE_LOG(LogTemp, Warning, TEXT("No valid UActivatableInterface found on %s"), *ControlledObject->GetName())
 			}
 		}
+	}
+}
+
+void ATriggerButton::Toggle_Implementation(AActor *Sender)
+{
+	IsActive = !IsActive;
+	SetMaterial();
+	if (ControlledObjects.Num() > 0)
+	{
+		for (int i = 0; i < ControlledObjects.Num(); i++)
+		{
+			AActor *ControlledObject = ControlledObjects[i];
+			if (ControlledObject->GetClass()->ImplementsInterface(UActivatableInterface::StaticClass()))
+			{
+				IActivatableInterface::Execute_Toggle(ControlledObject, this);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No valid UActivatableInterface found on %s"), *ControlledObject->GetName())
+			}
+		}
+	}
+}
+
+void ATriggerButton::SetMaterial()
+{
+	if (IsActive)
+	{
+		ButtonMesh->SetMaterial(0, ActiveMaterial);
+	}
+	else 
+	{
+		ButtonMesh->SetMaterial(0, OriginalMaterial);
 	}
 }

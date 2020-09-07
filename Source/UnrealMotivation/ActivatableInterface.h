@@ -6,7 +6,6 @@
 #include "UObject/Interface.h"
 #include "ActivatableInterface.generated.h"
 
-
 UINTERFACE(MinimalAPI, Blueprintable, BlueprintType)
 class UActivatableInterface : public UInterface
 {
@@ -18,10 +17,12 @@ class UNREALMOTIVATION_API IActivatableInterface
 	GENERATED_BODY()
 
 public:
-/** A version of ActivatableInterface that can be implemented in Blueprint. */
-UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Activatable Interface")
-void Activate(AActor* Sender = nullptr);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Activatable Interface")
+	void Activate(AActor *Sender);
 
-UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Activatable Interface")
-void Deactivate(AActor* Sender);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Activatable Interface")
+	void Deactivate(AActor *Sender);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Activatable Interface")
+	void Toggle(AActor *Sender);
 };
