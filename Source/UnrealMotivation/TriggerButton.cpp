@@ -1,35 +1,70 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TriggerButton.h"
+#include "ActivatableInterface.h"
 
 // Sets default values
 ATriggerButton::ATriggerButton()
 {
-	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	VisualMesh->SetupAttachment(RootComponent);
-
 	ButtonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ButtonMesh"));
-	ButtonMesh->SetupAttachment(VisualMesh);
+	ButtonMesh->SetupAttachment(RootComponent);
+	OriginalMaterial = ButtonMesh->GetMaterial(0);
 
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 // Called when the game starts or when spawned
 void ATriggerButton::BeginPlay()
 {
 	Super::BeginPlay();
-	SetActorTickEnabled(false);
+	if (!ActiveMaterial)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No ActiveMaterial assigned"));
+	}
 }
 
-// Called every frame
-void ATriggerButton::Activate_Implementation(AActor* Sender)
+void ATriggerButton::Activate_Implementation(AActor *Sender)
 {
-	SetActorTickEnabled(true);
+	// I'll leave this one here to remember how to Printf a TCHAR
+	// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Received input from: %s"), *Sender->GetName()));
+
+	IsActive = true;
+	ButtonMesh->SetMaterial(0, ActiveMaterial);
+
+	if (ControlledObjects.Num() > 0)
+	{
+		for (int i = 0; i < ControlledObjects.Num(); i++)
+		{
+			AActor *ControlledObject = ControlledObjects[i];
+			if (ControlledObject->GetClass()->ImplementsInterface(UActivatableInterface::StaticClass()))
+			{
+				IActivatableInterface::Execute_Activate(ControlledObject, this);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No valid UActivatableInterface found on %s"), *ControlledObject->GetName())
+			}
+		}
+	}
 }
 
-void ATriggerButton::Tick(float DeltaTime)
+void ATriggerButton::Deactivate_Implementation(AActor *Sender)
 {
-	Super::Tick(DeltaTime);
-	FVector ButtonLocation = ButtonMesh->GetRelativeLocation();
-	ButtonMesh->SetRelativeLocation(FMath::Lerp(ButtonLocation, PressedLocation, 0.03f), false);
+	IsActive = false;
+	ButtonMesh->SetMaterial(0, OriginalMaterial);
+	if (ControlledObjects.Num() > 0)
+	{
+		for (int i = 0; i < ControlledObjects.Num(); i++)
+		{
+			AActor *ControlledObject = ControlledObjects[i];
+			if (ControlledObject->GetClass()->ImplementsInterface(UActivatableInterface::StaticClass()))
+			{
+				IActivatableInterface::Execute_Deactivate(ControlledObject, this);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No valid UActivatableInterface found on %s"), *ControlledObject->GetName())
+			}
+		}
+	}
 }

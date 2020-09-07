@@ -17,18 +17,23 @@ public:
 	ATriggerButton();
 
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* VisualMesh;
-
-	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ButtonMesh;
 
+	/** Material to use when the button is active **/
 	UPROPERTY(EditAnywhere)
-	FVector PressedLocation = FVector(-2, 0, 0);
+	UMaterial* ActiveMaterial;
 
-	void Activate_Implementation(AActor* Sender) override;
+	UPROPERTY(EditAnywhere)
+	TArray<AActor*> ControlledObjects;
+
+	void Activate_Implementation(AActor* Sender = nullptr) override;
+	void Deactivate_Implementation(AActor* Sender) override;
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+	/** Default original material **/
+	UMaterialInterface* OriginalMaterial;
+	
+	bool IsActive = false;
 
+	virtual void BeginPlay() override;
 };

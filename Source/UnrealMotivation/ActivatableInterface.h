@@ -20,5 +20,8 @@ class UNREALMOTIVATION_API IActivatableInterface
 public:
 /** A version of ActivatableInterface that can be implemented in Blueprint. */
 UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Activatable Interface")
-void Activate(AActor* Sender);
+void Activate(AActor* Sender = nullptr);
+
+UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Activatable Interface")
+void Deactivate(AActor* Sender);
 };
