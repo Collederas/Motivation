@@ -90,9 +90,6 @@ void AFPCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AFPCharacter::OnFire);
 
-	// Enable touchscreen input
-	EnableTouchscreenMovement(PlayerInputComponent);
-
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFPCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFPCharacter::MoveRight);
@@ -163,19 +160,4 @@ void AFPCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-}
-
-bool AFPCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
-{
-	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
-	{
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AFPCharacter::BeginTouch);
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &AFPCharacter::EndTouch);
-
-		//Commenting this out to be more consistent with FPS BP template.
-		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AFPCharacter::TouchUpdate);
-		return true;
-	}
-	
-	return false;
 }

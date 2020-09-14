@@ -53,49 +53,40 @@ bool UFPCharacterMovementComponent::IsFloorNear(float DistanceCheck)
     return (FloorResult.FloorDist > 0 && FMath::IsNearlyZero(FloorResult.FloorDist, DistanceCheck));
 }
 
-// void UFPCharacterMovementComponent::PhysCustomSliding(float deltaTime, int32 Iterations)
-// {
-//     float remainingTime = deltaTime;
-
-//     while (Iterations < MaxSimulationIterations)
-//     {
-//         Iterations++;
-//         float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
-//         remainingTime -= timeTick;
-
-//         FHitResult Hit(1.f);
-//         FStepDownResult *OutStepDownResult;
-//         const float MaxDecel = GetMaxBrakingDeceleration();
-
-//         CalcVelocity(timeTick, 1, false, MaxDecel);
-
-//         const FVector Gravity(0.f, 0.f, GetGravityZ());
-//         float GravityTime = timeTick;
-//         Velocity = NewFallVelocity(Velocity, Gravity, GravityTime);
-
-//         FVector Adjusted = 0.5f * Velocity * timeTick;
-
-//         SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
-//         // GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Yellow, FString::Printf(TEXT("Sliding and input is %d"), AnalogInputModifier));
-//     }
-// float remainingTime = deltaTime;
-
-// while ((remainingTime >= MIN_TICK_TIME) && Iterations < MaxSimulationIterations)
-// {
-//     Iterations++;
-//     const float timeTick = GetSimulationTimeStep(remainingTime, Iterations);
-//     remainingTime -= timeTick;
-
-//     Velocity = FVector(-1000.0f, 0, 0);
-//     FString DebugMsg = FString::Printf(TEXT("Velocity is set to %s"), *(Velocity.ToString()));
-//     GEngine->AddOnScreenDebugMessage(1, 2.0f, FColor::Yellow, DebugMsg);
-//     //  UE_LOG(LogTemp, Warning, TEXT("Current: %s"), *(myResult.Location.ToString()));
-// }
-
-// SlideAlongSurface(Delta, 1.f - PercentTimeApplied, Hit.Normal, Hit, true);
-// }
-
 FVector UFPCharacterMovementComponent::HandleSlopeBoosting(const FVector &SlideResult, const FVector &Delta, const float Time, const FVector &Normal, const FHitResult &Hit) const
 {
-    return SlideResult;
+    // Do not cancel out the whole Z component. I set it to 0.5f the original value.
+
+    FVector Result = SlideResult;
+
+    if (Result.Z > 0.f)
+    {
+        // Don't move any higher than we originally intended.
+        const float ZLimit = Delta.Z * Time;
+
+        if (Result.Z - ZLimit > KINDA_SMALL_NUMBER)
+        {
+            if (ZLimit > 0.f)
+            {
+                // Rescale the entire vector (not just the Z component) otherwise we change the direction and likely head right back into the impact.
+                const float UpPercent = ZLimit / Result.Z;
+                Result *= UpPercent;
+                UE_LOG(LogTemp, Warning, TEXT("UpPercent, %f"), UpPercent);
+            }
+            else
+            {
+                // We were heading down but were going to deflect upwards. Just make the deflection horizontal.
+                Result = FVector::ZeroVector;
+            }
+            UE_LOG(LogTemp, Warning, TEXT("Still going in"));
+
+            // Make remaining portion of original result horizontal and parallel to impact normal.
+            const FVector Remainder = (SlideResult - Result) * FVector(1.f, 1.f, 0.5f);
+            const FVector NormalXY = Normal.GetSafeNormal2D();
+            const FVector Adjust = Super::ComputeSlideVector(Remainder, 1.f, NormalXY, Hit);
+            Result += Adjust;
+        }
+    }
+
+    return Result;
 }
