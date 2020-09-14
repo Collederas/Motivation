@@ -24,6 +24,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	virtual void UseItem(UItem *item);
 
+	UPROPERTY(EditAnywhere)
+	bool InfiniteObjects;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AGunProjectileBase> InfiniteObjectsClass;
+
 	FOnItemUsed OnItemUsed;
 
 protected:

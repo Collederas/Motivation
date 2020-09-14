@@ -15,12 +15,11 @@ class UNREALMOTIVATION_API UItem : public UObject
 {
 	GENERATED_BODY()
 
-protected:
-	UFUNCTION(BlueprintCallable, Category = "Item")
- 	static UItem* Make(FString Name, TSubclassOf<AGunProjectileBase> ClassType);
-
 public:
 	UItem();
+
+	UFUNCTION(BlueprintCallable, Category = "Item")
+ 	static UItem* Make(FString Name, TSubclassOf<AGunProjectileBase> ClassType);
 
 	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
 	FText Name;
