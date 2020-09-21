@@ -27,15 +27,7 @@ protected:
 	UPROPERTY(Category="Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float SlidingAirControl;
 
-	/** Override to prevent reduction of the Z component when Impacing a slope after a jump and preserve momentum. */
-	FVector HandleSlopeBoosting(const FVector& SlideResult, const FVector& Delta, const float Time, const FVector& Normal, const FHitResult& Hit) const;
-
-	/** Override to increase AirControl. */
-	void PhysFalling(float deltaTime, int32 Iterations) override;
-
-	/** Override to restore AirControl. */
-	void ProcessLanded(const FHitResult& Hit, float remainingTime, int32 Iterations) override;
-
+	UFUNCTION(BlueprintCallable)
 	/**
 	 * Detect if the floor is closer than the provided DistanceCheck parameter
 	 *
