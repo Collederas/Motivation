@@ -21,11 +21,14 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(VisibleAnywhere, Category = Movement)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Movement)
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	class UStaticMeshComponent* MeshComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Movement, meta=(ExposeOnSpawn="true"))
+	float InitialSpeed;
 
 	// Function that initializes the projectile's velocity in the shoot direction.
 	UFUNCTION(BlueprintCallable)

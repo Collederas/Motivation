@@ -17,7 +17,6 @@ void UInventoryComponent::BeginPlay()
 
 	if (InfiniteObjects)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Has Inifinite obj"));
 
 		for (int i = 0; i <= 100; i++)
 		{
