@@ -27,20 +27,25 @@ void UInventoryComponent::BeginPlay()
 	}
 }
 
-void UInventoryComponent::Add(UItem *item)
+void UInventoryComponent::Add(UItem *Item)
 {
-	FString itemName = item->Name.ToString();
+	FString itemName = Item->Name.ToString();
 	TArray<FStringFormatArg> args;
 	args.Add(FStringFormatArg(itemName));
 
 	FString string = FString::Format(TEXT("Adding {0} to inventory"), args);
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, string);
-	Items.Add(item);
+	Items.Add(Item);
 }
 
 void UInventoryComponent::RemoveItem(UItem *Item)
 {
 	Items.Remove(Item);
+}
+
+bool UInventoryComponent::Contains(UItem *Item)
+{
+	return Items.Contains(Item);
 }
 
 TArray<class UItem *> UInventoryComponent::GetContent()

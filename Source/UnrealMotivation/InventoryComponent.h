@@ -30,6 +30,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AGunProjectileBase> InfiniteObjectsClass;
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	virtual bool Contains(UItem* Item);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	virtual void RemoveItem(UItem* Item);
+
 	FOnItemUsed OnItemUsed;
 
 protected:
@@ -37,10 +43,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void Add(UItem *item);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void RemoveItem(UItem* Item);
+	virtual void Add(UItem *Item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	virtual TArray<class UItem *> GetContent();

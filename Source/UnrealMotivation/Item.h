@@ -19,11 +19,11 @@ public:
 	UItem();
 
 	UFUNCTION(BlueprintCallable, Category = "Item")
- 	static UItem* Make(FString Name, TSubclassOf<AGunProjectileBase> ClassType);
+ 	static UItem* Make(FString Name, TSubclassOf<AActor> ClassType);
 
 	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
 	FText Name;
 
 	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
-	TSubclassOf<AGunProjectileBase> ClassType;
+	TSubclassOf<AActor> ClassType;
 };
