@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "InventoryComponent.h"
-#include "Item.h"
+#include "InventoryItem.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -20,14 +20,13 @@ void UInventoryComponent::BeginPlay()
 
 		for (int i = 0; i <= 100; i++)
 		{
-			UItem *ItemToAdd = UItem::Make("Debug_Object", InfiniteObjectsClass);
-			UE_LOG(LogTemp, Warning, TEXT("AddingItems"));
+			UInventoryItem *ItemToAdd = UInventoryItem::Instantiate("Debug_Object", InfiniteObjectsClass);
 			Items.Add(ItemToAdd);
 		}
 	}
 }
 
-void UInventoryComponent::Add(UItem *Item)
+void UInventoryComponent::AddItem(UInventoryItem *Item)
 {
 	FString itemName = Item->Name.ToString();
 	TArray<FStringFormatArg> args;
@@ -38,17 +37,19 @@ void UInventoryComponent::Add(UItem *Item)
 	Items.Add(Item);
 }
 
-void UInventoryComponent::RemoveItem(UItem *Item)
+void UInventoryComponent::RemoveItem(UInventoryItem *Item)
 {
 	Items.Remove(Item);
 }
 
-bool UInventoryComponent::Contains(UItem *Item)
+bool UInventoryComponent::Contains(UInventoryItem *Item)
 {
-	return Items.Contains(Item);
+	return Items.ContainsByPredicate([Item] (const UInventoryItem* InternalItem) {
+		return InternalItem->Uuid == Item->Uuid;
+	});
 }
 
-TArray<class UItem *> UInventoryComponent::GetContent()
+TArray<class UInventoryItem *> UInventoryComponent::GetContent()
 {
 	return Items;
 }
@@ -58,7 +59,7 @@ bool UInventoryComponent::IsEmpty()
 	return Items.Num() > 0 ? false : true;
 }
 
-void UInventoryComponent::UseItem(UItem *item)
+void UInventoryComponent::UseItem(UInventoryItem *item)
 {
 	OnItemUsed.Broadcast(item);
 }

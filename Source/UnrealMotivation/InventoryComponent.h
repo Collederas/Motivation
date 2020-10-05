@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item.h"
+#include "InventoryItem.h"
+#include "Pickup.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
-DECLARE_EVENT_OneParam(UInventoryComponent, FOnItemUsed, UItem *);
+DECLARE_EVENT_OneParam(UInventoryComponent, FOnItemUsed, UInventoryItem *);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALMOTIVATION_API UInventoryComponent : public UActorComponent
@@ -19,22 +20,25 @@ public:
 	UInventoryComponent();
 
 	UPROPERTY(EditDefaultsOnly, Instanced, BlueprintReadWrite, Category = "Inventory")
-	TArray<class UItem *> Items;
+	TArray<class UInventoryItem *> Items;
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	virtual void UseItem(UInventoryItem *Item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void UseItem(UItem *item);
+	virtual void AddItem(UInventoryItem *Item);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool InfiniteObjects;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AGunProjectileBase> InfiniteObjectsClass;
+	TSubclassOf<class APickup> InfiniteObjectsClass;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual bool Contains(UItem* Item);
+	virtual bool Contains(UInventoryItem* Item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void RemoveItem(UItem* Item);
+	virtual void RemoveItem(UInventoryItem* Item);
 
 	FOnItemUsed OnItemUsed;
 
@@ -43,10 +47,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual void Add(UItem *Item);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	virtual TArray<class UItem *> GetContent();
+	virtual TArray<class UInventoryItem *> GetContent();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	virtual bool IsEmpty();

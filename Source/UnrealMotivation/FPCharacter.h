@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InventoryComponent.h"
-#include "Item.h"
+#include "InventoryItem.h"
 #include "FPCharacter.generated.h"
 
 class UInputComponent;
@@ -73,7 +73,7 @@ public:
 
 protected:
 	/** Uses an item. */
-	void OnItemUsed(UItem* item);
+	void OnItemUsed(UInventoryItem* item);
 
 	/** Fires a projectile. */
 	void OnFire();

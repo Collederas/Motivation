@@ -2,7 +2,6 @@
 
 #include "FPCharacter.h"
 #include "FPCharacterMovementComponent.h"
-#include "Item.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -66,7 +65,7 @@ void AFPCharacter::BeginPlay()
 //////////////////////////////////////////////////////////////////////////
 // TEST ITEM DELEGATE BINDING
 
-void AFPCharacter::OnItemUsed(UItem* item)
+void AFPCharacter::OnItemUsed(UInventoryItem* item)
 {
 	FString itemName = item->Name.ToString();
 	TArray<FStringFormatArg> args;
