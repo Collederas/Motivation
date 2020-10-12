@@ -12,13 +12,11 @@ UFPCharacterMovementComponent::UFPCharacterMovementComponent()
 void UFPCharacterMovementComponent::PhysWalking(float deltaTime, int32 Iterations)
 {
     Super::PhysWalking(deltaTime, Iterations);
-    GEngine->AddOnScreenDebugMessage(-1, 0.5, FColor::Red, "Waking");
 }
 
 void UFPCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
 {
     Super::PhysFalling(deltaTime, Iterations);
-    GEngine->AddOnScreenDebugMessage(-1, 0.5, FColor::Emerald, "Falling");
 }
 
 bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)

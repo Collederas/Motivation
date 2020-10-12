@@ -9,6 +9,9 @@ ATriggerButton::ATriggerButton()
 	ButtonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ButtonMesh"));
 	ButtonMesh->SetupAttachment(RootComponent);
 	OriginalMaterial = ButtonMesh->GetMaterial(0);
+	static ConstructorHelpers::FObjectFinder<UMaterial> DefaultActiveMaterial(TEXT("Material'/Game/Art/Materials/ButtonOn.ButtonOn'"));
+	ActiveMaterial = DefaultActiveMaterial.Object;
+
 
 	PrimaryActorTick.bCanEverTick = false;
 }
