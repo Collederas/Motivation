@@ -67,7 +67,7 @@ void AFPCharacter::BeginPlay()
 
 void AFPCharacter::OnItemUsed(UInventoryItem* item)
 {
-	FString itemName = item->Name.ToString();
+	FString itemName = item->Name;
 	TArray<FStringFormatArg> args;
 	args.Add(FStringFormatArg(itemName));
 

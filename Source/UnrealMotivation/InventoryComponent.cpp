@@ -28,7 +28,7 @@ void UInventoryComponent::BeginPlay()
 
 void UInventoryComponent::AddItem(UInventoryItem *Item)
 {
-	FString itemName = Item->Name.ToString();
+	FString itemName = Item->Name;
 	TArray<FStringFormatArg> args;
 	args.Add(FStringFormatArg(itemName));
 

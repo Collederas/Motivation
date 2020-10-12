@@ -25,7 +25,7 @@ public:
 	// Spawn(FVector Location, FRotator Rotation);
 
 	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
-	FText Name;
+	FString Name  = "Item";
 
 	UPROPERTY(SimpleDisplay)
 	FGuid Uuid;
