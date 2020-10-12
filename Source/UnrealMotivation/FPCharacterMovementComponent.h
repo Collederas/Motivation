@@ -20,11 +20,11 @@ public:
 
 protected:
 	/** What boost to give to the standard Jump velocity when jumping from a slope. */
-	UPROPERTY(Category="Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float ForwardJumpMultiplier;
 
 	/** Determines what AirControl value to use when sliding on slopes. */
-	UPROPERTY(Category="Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float SlidingAirControl;
 
 	UFUNCTION(BlueprintCallable)
@@ -36,7 +36,9 @@ protected:
 	 */
 	bool IsFloorNear(float DistanceCheck = 0.05f);
 
+	void PhysFalling(float deltaTime00, int32 Iterations) override;
+	void PhysWalking(float deltaTime00, int32 Iterations) override;
+
 private:
 	float OriginalAirControl;
 };
-
