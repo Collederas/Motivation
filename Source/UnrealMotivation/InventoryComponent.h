@@ -9,6 +9,7 @@
 #include "InventoryComponent.generated.h"
 
 DECLARE_EVENT_OneParam(UInventoryComponent, FOnItemUsed, UInventoryItem *);
+DECLARE_DELEGATE_OneParam(InventoryItemDelegate, UInventoryItem*);	
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALMOTIVATION_API UInventoryComponent : public UActorComponent
@@ -39,8 +40,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	virtual void RemoveItem(UInventoryItem* Item);
+	
+	UFUNCTION(BlueprintCallable)
+	void Equip(UInventoryItem *Item);
 
 	FOnItemUsed OnItemUsed;
+
+	InventoryItemDelegate EquipItemDelegate;
 
 protected:
 	// Called when the game starts

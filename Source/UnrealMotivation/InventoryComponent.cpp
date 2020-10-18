@@ -63,3 +63,8 @@ void UInventoryComponent::UseItem(UInventoryItem *item)
 {
 	OnItemUsed.Broadcast(item);
 }
+
+void UInventoryComponent::Equip(UInventoryItem *Item)
+{
+    EquipItemDelegate.Execute(Item);
+}

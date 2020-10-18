@@ -22,17 +22,17 @@ public:
 	APickup();
 
 	UFUNCTION(BlueprintCallable, Category = "Pickup")
-	UInventoryItem* GetInventoryItem();
+	UInventoryItem* SerializeInventoryItem();
 
 	UFUNCTION(BlueprintCallable, Category = "Pickup")
-	void AddTo(UInventoryComponent* Inventory);
+	void AddToInventory(UInventoryComponent* Inventory);
+
+	UPROPERTY(EditAnywhere)
+	bool Equippable = false;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// Setter that works by instancing a UInventoryItem from this APickup
-	void SetInventoryItem();
 
 	/** Serialize the current actor into an instance of UInventoryItem. **/
 	UInventoryItem* MakeInventoryItem();

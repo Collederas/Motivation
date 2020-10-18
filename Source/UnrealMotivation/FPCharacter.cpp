@@ -1,22 +1,22 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "FPCharacter.h"
-#include "FPCharacterMovementComponent.h"
 #include "Animation/AnimInstance.h"
+#include "InventoryItem.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "FPCharacterMovementComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "Kismet/GameplayStatics.h"
-
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
 //////////////////////////////////////////////////////////////////////////
 // AFPCharacter
 
-AFPCharacter::AFPCharacter(const FObjectInitializer& ObjectInitializer)
-: Super(ObjectInitializer.SetDefaultSubobjectClass<UFPCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
+AFPCharacter::AFPCharacter(const FObjectInitializer &ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UFPCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
@@ -25,7 +25,7 @@ AFPCharacter::AFPCharacter(const FObjectInitializer& ObjectInitializer)
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
-	// Create a CameraComponent	
+	// Create a CameraComponent
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
@@ -35,22 +35,17 @@ AFPCharacter::AFPCharacter(const FObjectInitializer& ObjectInitializer)
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	InventoryComponent->OnItemUsed.AddUObject(this, &AFPCharacter::OnItemUsed);
 
-	// Create a gun mesh component
-	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
-	FP_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
-	FP_Gun->bCastDynamicShadow = false;
-	FP_Gun->CastShadow = false;
-	FP_Gun->SetupAttachment(RootComponent);
+	InventoryComponent->EquipItemDelegate.BindUObject(this, &AFPCharacter::Equip);
 
-	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
-	FP_MuzzleLocation->SetupAttachment(FP_Gun);
-	FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
+	// Equippable object bindings
+	EquippableObject = CreateDefaultSubobject<USceneComponent>(TEXT("EquipLocation"));
+	EquippableObject->SetupAttachment(FirstPersonCameraComponent);
 
 	// Default offset from the character location for projectiles to spawn
-	GunOffset = FVector(100.0f, 0.0f, 10.0f);
+	EquippableObjectOffset = FVector(100.0f, 0.0f, 10.0f);
 
 	// Set custom movement component to allow for custom movement modes
-	UFPCharacterMovementComponent* MovementComponent = Cast<UFPCharacterMovementComponent>(GetCharacterMovement());
+	UFPCharacterMovementComponent *MovementComponent = Cast<UFPCharacterMovementComponent>(GetCharacterMovement());
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
@@ -58,26 +53,26 @@ AFPCharacter::AFPCharacter(const FObjectInitializer& ObjectInitializer)
 
 void AFPCharacter::BeginPlay()
 {
-	// Call the base class  
+	// Call the base class
 	Super::BeginPlay();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // TEST ITEM DELEGATE BINDING
 
-void AFPCharacter::OnItemUsed(UInventoryItem* item)
+void AFPCharacter::OnItemUsed(UInventoryItem *item)
 {
 	FString itemName = item->Name;
 	TArray<FStringFormatArg> args;
 	args.Add(FStringFormatArg(itemName));
 
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, itemName);  
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, itemName);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AFPCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void AFPCharacter::SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent)
 {
 	// set up gameplay key bindings
 	check(PlayerInputComponent);
@@ -85,9 +80,6 @@ void AFPCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-
-	// Bind fire event
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AFPCharacter::OnFire);
 
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFPCharacter::MoveForward);
@@ -102,34 +94,41 @@ void AFPCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AFPCharacter::LookUpAtRate);
 }
 
-void AFPCharacter::OnFire()
-{}
-
-
-void AFPCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
+void AFPCharacter::Fire(TSubclassOf<AActor> ProjectileClass)
 {
-	if (TouchItem.bIsPressed == true)
-	{
-		return;
-	}
-	if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false))
-	{
-		OnFire();
-	}
-	TouchItem.bIsPressed = true;
-	TouchItem.FingerIndex = FingerIndex;
-	TouchItem.Location = Location;
-	TouchItem.bMoved = false;
+	// // try and fire a projectile
+	// if (ProjectileClass != NULL)
+	// {
+	// 	UWorld *const World = GetWorld();
+	// 	if (World != NULL)
+	// 	{
+	// 		const FRotator SpawnRotation = GetControlRotation();
+
+	// 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+	// 		const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(EquippableObjectOffset);
+
+	// 		//Set Spawn Collision Handling Override
+	// 		FActorSpawnParameters ActorSpawnParams;
+	// 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	// 		// spawn the projectile at the muzzle
+	// 		World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+	// 	}
+	// }
 }
 
-void AFPCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
+void AFPCharacter::Equip(UInventoryItem* Item)
 {
-	if (TouchItem.bIsPressed == false)
+
+	if (Item->Equippable) 
 	{
-		return;
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("EQUIPPED"));
+		APickup* ItemActor = GetWorld()->SpawnActor<APickup>(Item->ClassType, EquippableObject->GetComponentTransform());
+		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::SnapToTarget, false);
+		ItemActor->AttachToComponent(EquippableObject, rules);
 	}
-	TouchItem.bIsPressed = false;
 }
+
 
 void AFPCharacter::MoveForward(float Value)
 {

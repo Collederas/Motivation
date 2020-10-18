@@ -9,31 +9,26 @@ APickup::APickup()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-UInventoryItem* APickup::GetInventoryItem()
+UInventoryItem* APickup::SerializeInventoryItem()
 {
 	return InventoryItem;
-}
-
-void APickup::SetInventoryItem()
-{
-	InventoryItem = MakeInventoryItem();
 }
 
 // Called when the game starts or when spawned
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-	SetInventoryItem();
+	InventoryItem = MakeInventoryItem();
 }
 
 UInventoryItem* APickup::MakeInventoryItem()
 {
-	return UInventoryItem::Instantiate(GetName(), GetClass());
+	return UInventoryItem::Instantiate(GetName(), GetClass(), Equippable);
 }
 
-void APickup::AddTo(UInventoryComponent* Inventory)
+void APickup::AddToInventory(UInventoryComponent* Inventory)
 {
-	UInventoryItem* Item = GetInventoryItem();
+	UInventoryItem* Item = SerializeInventoryItem();
 	if (!Item) {
 		return;
 	}

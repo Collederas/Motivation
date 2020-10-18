@@ -6,9 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "InventoryItem.generated.h"
 
-/**
- * 
- */
+
 UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class UNREALMOTIVATION_API UInventoryItem : public UObject
 {
@@ -18,11 +16,7 @@ public:
 	UInventoryItem();
 
 	UFUNCTION(BlueprintCallable, Category = "Item")
- 	static UInventoryItem* Instantiate(FString Name, TSubclassOf<AActor> ClassType);
-
-	/** Spawn an Actor from the UInventoryItem properties. */
-	// UFUNCTION(BlueprintCallable, Category = "Item")
-	// Spawn(FVector Location, FRotator Rotation);
+ 	static UInventoryItem* Instantiate(FString Name, TSubclassOf<AActor> ClassType, bool Equippable = false);
 
 	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
 	FString Name  = "Item";
@@ -32,4 +26,8 @@ public:
 
 	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
 	TSubclassOf<AActor> ClassType;
+
+	// Determines if Character can equip this object.
+	UPROPERTY(SimpleDisplay, EditDefaultsOnly, BlueprintReadWrite, Category = "Item")
+	bool Equippable = false;
 };
