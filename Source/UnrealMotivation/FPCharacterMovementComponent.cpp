@@ -17,6 +17,10 @@ void UFPCharacterMovementComponent::PhysWalking(float deltaTime, int32 Iteration
 void UFPCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
 {
     Super::PhysFalling(deltaTime, Iterations);
+    if (IsFloorNear())
+    {
+        AirControl = SlidingAirControl;
+    }
 }
 
 bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)

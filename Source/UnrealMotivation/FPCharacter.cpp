@@ -112,6 +112,7 @@ void AFPCharacter::Fire(TSubclassOf<AActor> ProjectileClass)
 
 			// spawn the projectile at the muzzle
 			World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+
 		}
 	}
 }
