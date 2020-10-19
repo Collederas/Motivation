@@ -108,7 +108,7 @@ void AFPCharacter::Fire(TSubclassOf<AActor> ProjectileClass)
 
 			//Set Spawn Collision Handling Override
 			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 			// spawn the projectile at the muzzle
 			World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
@@ -126,7 +126,13 @@ void AFPCharacter::Equip(UInventoryItem *Item)
 		EquipActor->FinishSpawning(EquippableObject->GetComponentTransform());
 		FAttachmentTransformRules TransformRules = FAttachmentTransformRules( EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
 		EquipActor->AttachToComponent(EquippableObject, TransformRules);
+		EquippedObject = EquipActor;
 	}
+}
+
+APickup* AFPCharacter::GetCurrentEquippedObject() 
+{
+	return EquippedObject;
 }
 
 void AFPCharacter::MoveForward(float Value)

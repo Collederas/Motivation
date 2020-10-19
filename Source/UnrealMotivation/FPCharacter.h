@@ -52,11 +52,16 @@ public:
 
 
 protected:
+	APickup* EquippedObject;
+
 	/** Uses an item. */
 	void OnItemUsed(UInventoryItem* item);
 
 	// Equips an object and spawns it at the EquippableObject Location
 	void Equip(UInventoryItem* Item);
+
+	UFUNCTION(BlueprintCallable)
+	APickup* GetCurrentEquippedObject();
 
 	/** Fires a projectile. */
 	UFUNCTION(BlueprintCallable)

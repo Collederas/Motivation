@@ -13,7 +13,6 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	InfiniteObjects = true;
 
 	if (InfiniteObjects)
 	{
