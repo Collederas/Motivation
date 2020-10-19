@@ -2,12 +2,12 @@
 
 #include "FPCharacter.h"
 #include "Animation/AnimInstance.h"
-#include "InventoryItem.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "FPCharacterMovementComponent.h"
 #include "GameFramework/InputSettings.h"
+#include "InventoryItem.h"
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -34,15 +34,14 @@ AFPCharacter::AFPCharacter(const FObjectInitializer &ObjectInitializer)
 	// Bind Inventory
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	InventoryComponent->OnItemUsed.AddUObject(this, &AFPCharacter::OnItemUsed);
-
 	InventoryComponent->EquipItemDelegate.BindUObject(this, &AFPCharacter::Equip);
 
 	// Equippable object bindings
 	EquippableObject = CreateDefaultSubobject<USceneComponent>(TEXT("EquipLocation"));
 	EquippableObject->SetupAttachment(FirstPersonCameraComponent);
 
-	// Default offset from the character location for projectiles to spawn
-	EquippableObjectOffset = FVector(100.0f, 0.0f, 10.0f);
+	EquippableObjectShootPoint = CreateDefaultSubobject<USceneComponent>(TEXT("ShootLocation"));
+	EquippableObjectShootPoint->SetupAttachment(EquippableObject);
 
 	// Set custom movement component to allow for custom movement modes
 	UFPCharacterMovementComponent *MovementComponent = Cast<UFPCharacterMovementComponent>(GetCharacterMovement());
@@ -96,39 +95,39 @@ void AFPCharacter::SetupPlayerInputComponent(class UInputComponent *PlayerInputC
 
 void AFPCharacter::Fire(TSubclassOf<AActor> ProjectileClass)
 {
-	// // try and fire a projectile
-	// if (ProjectileClass != NULL)
-	// {
-	// 	UWorld *const World = GetWorld();
-	// 	if (World != NULL)
-	// 	{
-	// 		const FRotator SpawnRotation = GetControlRotation();
-
-	// 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-	// 		const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(EquippableObjectOffset);
-
-	// 		//Set Spawn Collision Handling Override
-	// 		FActorSpawnParameters ActorSpawnParams;
-	// 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	// 		// spawn the projectile at the muzzle
-	// 		World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-	// 	}
-	// }
-}
-
-void AFPCharacter::Equip(UInventoryItem* Item)
-{
-
-	if (Item->Equippable) 
+	// try and fire a projectile
+	if (ProjectileClass != NULL)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("EQUIPPED"));
-		APickup* ItemActor = GetWorld()->SpawnActor<APickup>(Item->ClassType, EquippableObject->GetComponentTransform());
-		FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::SnapToTarget, false);
-		ItemActor->AttachToComponent(EquippableObject, rules);
+		UWorld *const World = GetWorld();
+		if (World != NULL)
+		{
+			const FRotator SpawnRotation = GetControlRotation();
+
+			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+			const FVector SpawnLocation = ((EquippableObjectShootPoint != nullptr) ? EquippableObjectShootPoint->GetComponentLocation() : GetActorLocation());
+
+			//Set Spawn Collision Handling Override
+			FActorSpawnParameters ActorSpawnParams;
+			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			// spawn the projectile at the muzzle
+			World->SpawnActor<AActor>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+		}
 	}
 }
 
+void AFPCharacter::Equip(UInventoryItem *Item)
+{
+
+	if (Item->Equippable)
+	{	
+		APickup* EquipActor = (APickup*)UGameplayStatics::BeginDeferredActorSpawnFromClass(GetWorld(), Item->ClassType, EquippableObject->GetComponentTransform(), ESpawnActorCollisionHandlingMethod::AlwaysSpawn, this);
+		EquipActor->Equipped = true;
+		EquipActor->FinishSpawning(EquippableObject->GetComponentTransform());
+		FAttachmentTransformRules TransformRules = FAttachmentTransformRules( EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+		EquipActor->AttachToComponent(EquippableObject, TransformRules);
+	}
+}
 
 void AFPCharacter::MoveForward(float Value)
 {

@@ -30,6 +30,10 @@ public:
 	
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	class USceneComponent* EquippableObject;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	class USceneComponent* EquippableObjectShootPoint;
+
 protected:
 	virtual void BeginPlay();
 
@@ -41,10 +45,6 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
-
-	/** Equipped object offset from the characters location */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
-	FVector EquippableObjectOffset;
 
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)

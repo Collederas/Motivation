@@ -30,6 +30,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool Equippable = false;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn="true"))
+	bool Equipped = false;
+
+	UFUNCTION(BlueprintCallable, Category = "Pickup")
+	void SetEquipped(bool Value);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

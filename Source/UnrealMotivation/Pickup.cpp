@@ -23,7 +23,7 @@ void APickup::BeginPlay()
 
 UInventoryItem* APickup::MakeInventoryItem()
 {
-	return UInventoryItem::Instantiate(GetName(), GetClass(), Equippable);
+	return UInventoryItem::Instantiate(GetName(), GetClass(), GetStaticMeshComponent()->GetStaticMesh(), Equippable);
 }
 
 void APickup::AddToInventory(UInventoryComponent* Inventory)
@@ -33,4 +33,9 @@ void APickup::AddToInventory(UInventoryComponent* Inventory)
 		return;
 	}
 	return Inventory->AddItem(Item);
+}
+
+void APickup::SetEquipped(bool Value) 
+{
+	Equipped = Value;
 }
