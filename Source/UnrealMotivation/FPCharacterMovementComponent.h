@@ -27,6 +27,12 @@ protected:
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float SlidingAirControl;
 
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+	float SlidingAccelerationMultiplier;
+
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+	float LinetraceLength = 3000.0f;
+
 	UFUNCTION(BlueprintCallable)
 	/**
 	 * Detect if the floor is closer than the provided DistanceCheck parameter
@@ -35,9 +41,7 @@ protected:
 	 * @return Wether or not a floor was found within the given DistanceCheck constraint.
 	 */
 	bool IsFloorNear(float DistanceCheck = 0.05f);
-
-	void PhysFalling(float deltaTime00, int32 Iterations) override;
-	void PhysWalking(float deltaTime00, int32 Iterations) override;
+	void PhysCustom(float deltaTime, int32 Iterations) override;
 
 private:
 	float OriginalAirControl;
