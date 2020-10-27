@@ -42,6 +42,8 @@ protected:
 	 */
 	bool IsFloorNear(float DistanceCheck = 0.05f);
 	void PhysCustom(float deltaTime, int32 Iterations) override;
+	bool CanAttemptJump() const override;
+	virtual bool IsSliding() const;
 
 private:
 	float OriginalAirControl;

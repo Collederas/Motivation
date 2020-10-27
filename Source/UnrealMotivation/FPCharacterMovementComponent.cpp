@@ -11,7 +11,8 @@ UFPCharacterMovementComponent::UFPCharacterMovementComponent()
 }
 
 bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
-{
+{   
+    UE_LOG(LogTemp, Log, TEXT("CanJump: %d"), CharacterOwner->CanJump());
     if (CharacterOwner && CharacterOwner->CanJump())
     {
         // Don't jump if we can't move up/down.
@@ -53,7 +54,7 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
 
     if (bHit) {
         FVector HitForward = Hit.GetActor()->GetActorForwardVector();
-        DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + HitForward * 100.0f, FColor::Emerald, false, 5.0f, 4.0f);
+        // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + HitForward * 100.0f, FColor::Emerald, false, 5.0f, 4.0f);
 
         float SlidingDirectionDetector = FVector::DotProduct(HitForward, FVector::UpVector);
 
@@ -62,8 +63,8 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
             SlidingAccelerationMultiplier *= -1;
         }
 
-        UE_LOG(LogTemp, Log, TEXT("SlidingDirectionDetector: %f"), SlidingDirectionDetector);
-        UE_LOG(LogTemp, Log, TEXT("SlidingAccel: %f"), SlidingAccelerationMultiplier);
+        // UE_LOG(LogTemp, Log, TEXT("SlidingDirectionDetector: %f"), SlidingDirectionDetector);
+        // UE_LOG(LogTemp, Log, TEXT("SlidingAccel: %f"), SlidingAccelerationMultiplier);
 
         Acceleration = HitForward * SlidingAccelerationMultiplier * 100.0f;
 
@@ -75,4 +76,16 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
         SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
     }
+}
+
+bool UFPCharacterMovementComponent::CanAttemptJump() const 
+{
+	return IsJumpAllowed() &&
+		   !bWantsToCrouch &&
+		   (IsMovingOnGround() || IsFalling() || IsSliding()); // Falling included for double-jump and non-zero jump hold time, but validated by character.
+}
+
+bool UFPCharacterMovementComponent::IsSliding() const 
+{
+    return (MovementMode == MOVE_Custom) && UpdatedComponent;
 }
