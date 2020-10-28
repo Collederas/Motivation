@@ -18,12 +18,15 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
         // Don't jump if we can't move up/down.
         if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)
         {
-            if (IsFloorNear())
-            {
-                Velocity = CharacterOwner->GetActorForwardVector() * ForwardJumpMultiplier;
-            }
+            UE_LOG(LogTemp, Log, TEXT("Jumping with %f Z Velocity"), Velocity.Z);
 
             Velocity.Z = FMath::Max(Velocity.Z, JumpZVelocity);
+
+            if (IsSliding())
+            {
+                Velocity = FVector(Velocity.X * ForwardJumpMultiplier, Velocity.Y * ForwardJumpMultiplier, Velocity.Z);
+            }
+
             SetMovementMode(MOVE_Falling);
             return true;
         }
@@ -53,28 +56,17 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
     bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 200), ECC_Visibility, CollisionParams);
 
     if (bHit) {
-        FVector HitForward = Hit.GetActor()->GetActorForwardVector();
-        // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + HitForward * 100.0f, FColor::Emerald, false, 5.0f, 4.0f);
+        // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + HitForward * 1000.0f, FColor::Emerald, false, 50.0f, 4.0f);
 
-        float SlidingDirectionDetector = FVector::DotProduct(HitForward, FVector::UpVector);
+        FVector Normal2D = Hit.Normal.GetSafeNormal2D();
+        FVector DownwardAccel = Normal2D + FVector::DownVector;
+        Velocity = SlidingAccelerationMultiplier * DownwardAccel;
 
-        if (SlidingDirectionDetector > 0 && SlidingAccelerationMultiplier > 0 || SlidingDirectionDetector < 0 && SlidingAccelerationMultiplier < 0)
-        {
-            SlidingAccelerationMultiplier *= -1;
-        }
-
-        // UE_LOG(LogTemp, Log, TEXT("SlidingDirectionDetector: %f"), SlidingDirectionDetector);
-        // UE_LOG(LogTemp, Log, TEXT("SlidingAccel: %f"), SlidingAccelerationMultiplier);
-
-        Acceleration = HitForward * SlidingAccelerationMultiplier * 100.0f;
-
-        Velocity = Acceleration * deltaTime;
-        // UE_LOG(LogTemp, Log, TEXT("ACCEL AFTER CALC: %s"), *Velocity.ToString());
-
-        const FVector Adjusted = Velocity * deltaTime;
+        const FVector Adjusted =  Velocity * deltaTime;
 
         SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
         SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
+
     }
 }
 
