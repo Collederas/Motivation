@@ -7,26 +7,42 @@
 
 UFPCharacterMovementComponent::UFPCharacterMovementComponent()
 {
-    OriginalAirControl = AirControl;
+    
 }
 
 bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
 {   
-    UE_LOG(LogTemp, Log, TEXT("CanJump: %d"), CharacterOwner->CanJump());
     if (CharacterOwner && CharacterOwner->CanJump())
     {
         // Don't jump if we can't move up/down.
         if (!bConstrainToPlane || FMath::Abs(PlaneConstraintNormal.Z) != 1.f)
         {
-            UE_LOG(LogTemp, Log, TEXT("Jumping with %f Z Velocity"), Velocity.Z);
 
             Velocity.Z = FMath::Max(Velocity.Z, JumpZVelocity);
 
             if (IsSliding())
             {
-                Velocity = FVector(Velocity.X * ForwardJumpMultiplier, Velocity.Y * ForwardJumpMultiplier, Velocity.Z);
-            }
+                // Clamp the angle between floor and normal
 
+                FHitResult Hit(1.f);
+                FCollisionQueryParams CollisionParams;
+
+                bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 200), ECC_Visibility, CollisionParams);
+
+                FVector VelocityGroundProject = FVector::VectorPlaneProject(Velocity, Hit.Normal.GetSafeNormal());
+
+                float VelDotProduct = FVector::DotProduct(Velocity.GetSafeNormal(), VelocityGroundProject.GetSafeNormal());
+                UE_LOG(LogTemp, Log, TEXT("Jump Degrees with floor: %f"), FMath::Acos(VelDotProduct));
+                
+                if (FMath::Acos(VelDotProduct) > MaxJumpRotation){
+                    FVector RotatedVel = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(MaxJumpRotation), CharacterOwner->GetRootComponent()->GetRightVector());
+                    Velocity = RotatedVel;
+                }
+
+                DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity * 1000.0f, FColor::Emerald, false, 50.0f, 4.0f);
+                
+
+            }
             SetMovementMode(MOVE_Falling);
             return true;
         }
@@ -43,7 +59,7 @@ bool UFPCharacterMovementComponent::IsFloorNear(float DistanceCheck)
     return (FloorResult.FloorDist > 0 && FMath::IsNearlyZero(FloorResult.FloorDist, DistanceCheck));
 }
 
-void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations) 
+void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 {
     if (deltaTime < MIN_TICK_TIME)
 	{
@@ -55,22 +71,44 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
 
     bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 200), ECC_Visibility, CollisionParams);
 
-    if (bHit) {
+
+    if (bHit && !IsWalkable(Hit)) {
+        // ### DEBUG UTILITIES ###
         // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + HitForward * 1000.0f, FColor::Emerald, false, 50.0f, 4.0f);
+        // UE_LOG(LogTemp, Log, TEXT("Acceleration: %s"), *Acceleration.ToString());
+        // ###
 
         FVector Normal2D = Hit.Normal.GetSafeNormal2D();
-        FVector DownwardAccel = Normal2D + FVector::DownVector;
-        Velocity = SlidingAccelerationMultiplier * DownwardAccel;
+        // Basic "Piano inclinato" memories from high school
+        // Adding gravity (DownVector) to the normal, results in a vector that is parallel to the plane.
+        FVector DownwardVel = Normal2D + FVector::DownVector;
 
-        const FVector Adjusted =  Velocity * deltaTime;
+        // Then we project the character's current velocity onto the plane.
+        Velocity = Velocity.ProjectOnTo(DownwardVel);
 
+        // Now let's add acceleration to control the movement only laterally.
+        FVector SlideAcceleration = FVector::VectorPlaneProject(Acceleration, Normal2D);
+
+        // Prevent that pressing full back or forward moves the character right/left (right, Polar in Crash Bandicoot 4?)
+        float AccelDotP = FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal2D(), CharacterOwner->GetRootComponent()->GetRightVector()));
+        Acceleration = SlideAcceleration * 100 * AccelDotP;
+        DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Acceleration * 100.0f, FColor::Emerald, false, 50.0f, 4.0f);
+
+        // Apply sliding velocity and acceleration to current velocity
+        Velocity += SlidingVelocityMultiplier * DownwardVel;
+        Velocity += Acceleration * deltaTime;
+
+        // Move
+        const FVector Adjusted = Velocity.GetClampedToMaxSize(MaxCustomMovementSpeed) * deltaTime;
         SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
         SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 
+    } else {
+        SetMovementMode(MOVE_Falling);
     }
 }
 
-bool UFPCharacterMovementComponent::CanAttemptJump() const 
+bool UFPCharacterMovementComponent::CanAttemptJump() const
 {
 	return IsJumpAllowed() &&
 		   !bWantsToCrouch &&

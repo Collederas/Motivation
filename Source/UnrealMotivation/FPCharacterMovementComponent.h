@@ -18,21 +18,23 @@ class UNREALMOTIVATION_API UFPCharacterMovementComponent : public UCharacterMove
 public:
 	bool DoJump(bool bReplayingMoves) override;
 
+	UFUNCTION(BlueprintCallable)
+	bool IsSliding() const;
+
 protected:
 	/** What boost to give to the standard Jump velocity when jumping from a slope. */
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float ForwardJumpMultiplier;
 
-	/** Determines what AirControl value to use when sliding on slopes. */
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float SlidingAirControl;
+	float SlidingVelocityMultiplier;
 
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float SlidingAccelerationMultiplier;
+	float MaxSlidingAcceleration = 1000.0f;
 
-	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float LinetraceLength = 3000.0f;
-
+    UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+    float MaxJumpRotation = 0.7f;
+    
 	UFUNCTION(BlueprintCallable)
 	/**
 	 * Detect if the floor is closer than the provided DistanceCheck parameter
@@ -43,8 +45,4 @@ protected:
 	bool IsFloorNear(float DistanceCheck = 0.05f);
 	void PhysCustom(float deltaTime, int32 Iterations) override;
 	bool CanAttemptJump() const override;
-	virtual bool IsSliding() const;
-
-private:
-	float OriginalAirControl;
 };
