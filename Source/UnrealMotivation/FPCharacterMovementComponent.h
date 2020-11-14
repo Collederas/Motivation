@@ -22,18 +22,13 @@ public:
 	bool IsSliding() const;
 
 protected:
-	/** What boost to give to the standard Jump velocity when jumping from a slope. */
-	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float ForwardJumpMultiplier;
 
+	// Boost Velocity when sliding (clamped by MaxCustomMovementSpeed)
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float SlidingVelocityMultiplier;
 
-	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float MaxSlidingAcceleration = 1000.0f;
-
     UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-    float MaxJumpRotation = 0.7f;
+    float MaxJumpRotation = 0.65f;
     
 	UFUNCTION(BlueprintCallable)
 	/**

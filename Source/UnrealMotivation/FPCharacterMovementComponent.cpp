@@ -32,15 +32,12 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
                 FVector VelocityGroundProject = FVector::VectorPlaneProject(Velocity, Hit.Normal.GetSafeNormal());
 
                 float VelDotProduct = FVector::DotProduct(Velocity.GetSafeNormal(), VelocityGroundProject.GetSafeNormal());
-                UE_LOG(LogTemp, Log, TEXT("Jump Degrees with floor: %f"), FMath::Acos(VelDotProduct));
-                
+
                 if (FMath::Acos(VelDotProduct) > MaxJumpRotation){
                     FVector RotatedVel = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(MaxJumpRotation), CharacterOwner->GetRootComponent()->GetRightVector());
                     Velocity = RotatedVel;
                 }
-
-                DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity * 1000.0f, FColor::Emerald, false, 50.0f, 4.0f);
-                
+                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
 
             }
             SetMovementMode(MOVE_Falling);
@@ -91,9 +88,9 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
 
         // Prevent that pressing full back or forward moves the character right/left (right, Polar in Crash Bandicoot 4?)
         float AccelDotP = FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal2D(), CharacterOwner->GetRootComponent()->GetRightVector()));
-        Acceleration = SlideAcceleration * 100 * AccelDotP;
-        DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Acceleration * 100.0f, FColor::Emerald, false, 50.0f, 4.0f);
-
+        Acceleration = SlideAcceleration * 50 * AccelDotP;
+        // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Acceleration * 100.0f, FColor::Emerald, false, 50.0f, 4.0f);
+        
         // Apply sliding velocity and acceleration to current velocity
         Velocity += SlidingVelocityMultiplier * DownwardVel;
         Velocity += Acceleration * deltaTime;
@@ -102,7 +99,7 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         const FVector Adjusted = Velocity.GetClampedToMaxSize(MaxCustomMovementSpeed) * deltaTime;
         SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
         SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
-
+        
     } else {
         SetMovementMode(MOVE_Falling);
     }
