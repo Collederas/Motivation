@@ -19,6 +19,7 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
         {
 
             Velocity.Z = FMath::Max(Velocity.Z, JumpZVelocity);
+            UE_LOG(LogTemp, Log, TEXT("Velocity: %s"), *Velocity.ToString());
 
             if (IsSliding())
             {
@@ -35,8 +36,10 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
 
                 if (FMath::Acos(VelDotProduct) > MaxJumpRotation){
                     FVector RotatedVel = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(MaxJumpRotation), CharacterOwner->GetRootComponent()->GetRightVector());
-                    Velocity = RotatedVel;
+                    Velocity = RotatedVel.GetSafeNormal() * SlidingJumpBoost;
                 }
+                UE_LOG(LogTemp, Log, TEXT("Velocity after: %s"), *Velocity.ToString());
+
                 // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
 
             }
@@ -66,7 +69,7 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
     FHitResult Hit(1.f);
     FCollisionQueryParams CollisionParams;
 
-    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 200), ECC_Visibility, CollisionParams);
+    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 2500), ECC_Visibility, CollisionParams);
 
 
     if (bHit && !IsWalkable(Hit)) {
@@ -82,21 +85,30 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
 
         // Then we project the character's current velocity onto the plane.
         Velocity = Velocity.ProjectOnTo(DownwardVel);
+        
+        // If velocity is upwards, invert it.
+        if (FVector::DotProduct(Velocity.GetSafeNormal(), DownwardVel.GetSafeNormal()) < 0)
+            Velocity *= -1;
+
+        // Force Velocity to the Max when sliding
+        Velocity = Velocity.GetSafeNormal() * SlidingSpeed;
 
         // Now let's add acceleration to control the movement only laterally.
         FVector SlideAcceleration = FVector::VectorPlaneProject(Acceleration, Normal2D);
 
         // Prevent that pressing full back or forward moves the character right/left (right, Polar in Crash Bandicoot 4?)
         float AccelDotP = FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal2D(), CharacterOwner->GetRootComponent()->GetRightVector()));
-        Acceleration = SlideAcceleration * 50 * AccelDotP;
-        // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Acceleration * 100.0f, FColor::Emerald, false, 50.0f, 4.0f);
+        Acceleration = SlideAcceleration * AccelDotP * SlidingAccelerationControl;
         
         // Apply sliding velocity and acceleration to current velocity
-        Velocity += SlidingVelocityMultiplier * DownwardVel;
+        // Velocity += SlidingVelocityMultiplier * DownwardVel;
+
         Velocity += Acceleration * deltaTime;
+        
 
         // Move
-        const FVector Adjusted = Velocity.GetClampedToMaxSize(MaxCustomMovementSpeed) * deltaTime;
+        FVector Adjusted = Velocity.GetClampedToMaxSize(MaxCustomMovementSpeed) * deltaTime;
+
         SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
         SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
         

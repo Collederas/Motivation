@@ -23,13 +23,18 @@ public:
 
 protected:
 
-	// Boost Velocity when sliding (clamped by MaxCustomMovementSpeed)
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float SlidingVelocityMultiplier;
+	float SlidingSpeed;
 
-    UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+	float SlidingAccelerationControl;
+	
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
     float MaxJumpRotation = 0.65f;
     
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+    float SlidingJumpBoost = 10000.f;
+
 	UFUNCTION(BlueprintCallable)
 	/**
 	 * Detect if the floor is closer than the provided DistanceCheck parameter
