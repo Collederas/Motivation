@@ -19,7 +19,6 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
         {
 
             Velocity.Z = FMath::Max(Velocity.Z, JumpZVelocity);
-            UE_LOG(LogTemp, Log, TEXT("Velocity: %s"), *Velocity.ToString());
 
             if (IsSliding())
             {
@@ -28,9 +27,10 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
                 FHitResult Hit(1.f);
                 FCollisionQueryParams CollisionParams;
 
-                bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 200), ECC_Visibility, CollisionParams);
+                bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 500), ECC_Visibility, CollisionParams);
 
                 FVector VelocityGroundProject = FVector::VectorPlaneProject(Velocity, Hit.Normal.GetSafeNormal());
+                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + VelocityGroundProject, FColor::Emerald, false, 50.0f, 4.0f);
 
                 float VelDotProduct = FVector::DotProduct(Velocity.GetSafeNormal(), VelocityGroundProject.GetSafeNormal());
 
@@ -38,11 +38,9 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
                     FVector RotatedVel = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(MaxJumpRotation), CharacterOwner->GetRootComponent()->GetRightVector());
                     Velocity = RotatedVel.GetSafeNormal() * SlidingJumpBoost;
                 }
-                UE_LOG(LogTemp, Log, TEXT("Velocity after: %s"), *Velocity.ToString());
-
                 // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
-
             }
+
             SetMovementMode(MOVE_Falling);
             return true;
         }
@@ -61,6 +59,8 @@ bool UFPCharacterMovementComponent::IsFloorNear(float DistanceCheck)
 
 void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 {
+    UE_LOG(LogTemp, Warning, TEXT("QUI"));
+
     if (deltaTime < MIN_TICK_TIME)
 	{
 		return;
@@ -100,12 +100,9 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         float AccelDotP = FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal2D(), CharacterOwner->GetRootComponent()->GetRightVector()));
         Acceleration = SlideAcceleration * AccelDotP * SlidingAccelerationControl;
         
-        // Apply sliding velocity and acceleration to current velocity
-        // Velocity += SlidingVelocityMultiplier * DownwardVel;
-
+        // Apply acceleration to current velocity
         Velocity += Acceleration * deltaTime;
         
-
         // Move
         FVector Adjusted = Velocity.GetClampedToMaxSize(MaxCustomMovementSpeed) * deltaTime;
 
