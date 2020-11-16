@@ -35,10 +35,11 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
                 float VelDotProduct = FVector::DotProduct(Velocity.GetSafeNormal(), VelocityGroundProject.GetSafeNormal());
 
                 if (FMath::Acos(VelDotProduct) > MaxJumpRotation){
+
                     FVector RotatedVel = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(MaxJumpRotation), CharacterOwner->GetRootComponent()->GetRightVector());
                     Velocity = RotatedVel.GetSafeNormal() * SlidingJumpBoost;
                 }
-                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
+                DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
             }
 
             SetMovementMode(MOVE_Falling);
@@ -67,8 +68,7 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
     FHitResult Hit(1.f);
     FCollisionQueryParams CollisionParams;
 
-    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 2500), ECC_Visibility, CollisionParams);
-
+    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 1500), ECC_Visibility, CollisionParams);
 
     if (bHit && !IsWalkable(Hit)) {
         // ### DEBUG UTILITIES ###
