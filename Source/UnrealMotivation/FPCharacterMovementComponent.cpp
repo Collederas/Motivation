@@ -59,8 +59,6 @@ bool UFPCharacterMovementComponent::IsFloorNear(float DistanceCheck)
 
 void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 {
-    UE_LOG(LogTemp, Warning, TEXT("QUI"));
-
     if (deltaTime < MIN_TICK_TIME)
 	{
 		return;
@@ -90,9 +88,9 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         if (FVector::DotProduct(Velocity.GetSafeNormal(), DownwardVel.GetSafeNormal()) < 0)
             Velocity *= -1;
 
-        // Force Velocity to the Max when sliding
-        Velocity = Velocity.GetSafeNormal() * SlidingSpeed;
-
+        // Apply base sliding acceleration on XY axis
+        Velocity += Velocity.GetSafeNormal2D() * slidingAcceleration;
+        
         // Now let's add acceleration to control the movement only laterally.
         FVector SlideAcceleration = FVector::VectorPlaneProject(Acceleration, Normal2D);
 
@@ -102,7 +100,7 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         
         // Apply acceleration to current velocity
         Velocity += Acceleration * deltaTime;
-        
+        UE_LOG(LogTemp, Log, TEXT("Vel: %s"), *Velocity.ToString());
         // Move
         FVector Adjusted = Velocity.GetClampedToMaxSize(MaxCustomMovementSpeed) * deltaTime;
 

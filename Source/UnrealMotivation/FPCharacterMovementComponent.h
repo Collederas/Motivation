@@ -30,10 +30,14 @@ protected:
 	float SlidingAccelerationControl;
 	
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-    float MaxJumpRotation = 0.65f;
+    float MaxJumpRotation = 0.45f;
     
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
     float SlidingJumpBoost = 10000.f;
+
+	// Natural sliding acceleration size (XY) 
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+    float slidingAcceleration = 15.f;
 
 	UFUNCTION(BlueprintCallable)
 	/**
