@@ -24,9 +24,6 @@ public:
 protected:
 
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float SlidingSpeed;
-
-	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
 	float SlidingAccelerationControl;
 	
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
@@ -39,6 +36,10 @@ protected:
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
     float slidingAcceleration = 15.f;
 
+	// Length of LineTrace for sliding movement 
+	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
+    float slidingLineTraceLength = 500.f;
+
 	UFUNCTION(BlueprintCallable)
 	/**
 	 * Detect if the floor is closer than the provided DistanceCheck parameter
@@ -49,4 +50,9 @@ protected:
 	bool IsFloorNear(float DistanceCheck = 0.05f);
 	void PhysCustom(float deltaTime, int32 Iterations) override;
 	bool CanAttemptJump() const override;
+	bool GetShouldBoostJump();
+
+private:
+
+	bool bShouldBoostJump;
 };

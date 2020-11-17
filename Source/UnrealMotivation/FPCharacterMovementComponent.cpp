@@ -27,19 +27,19 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
                 FHitResult Hit(1.f);
                 FCollisionQueryParams CollisionParams;
 
-                bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 500), ECC_Visibility, CollisionParams);
+                bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, slidingLineTraceLength), ECC_Visibility, CollisionParams);
 
                 FVector VelocityGroundProject = FVector::VectorPlaneProject(Velocity, Hit.Normal.GetSafeNormal());
                 // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + VelocityGroundProject, FColor::Emerald, false, 50.0f, 4.0f);
 
-                float VelDotProduct = FVector::DotProduct(Velocity.GetSafeNormal(), VelocityGroundProject.GetSafeNormal());
+                float VelDotProductGround = FVector::DotProduct(Velocity.GetSafeNormal(), VelocityGroundProject.GetSafeNormal());
 
-                if (FMath::Acos(VelDotProduct) > MaxJumpRotation){
+                if (FMath::Acos(VelDotProductGround) > MaxJumpRotation && GetShouldBoostJump()){
 
                     FVector RotatedVel = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(MaxJumpRotation), CharacterOwner->GetRootComponent()->GetRightVector());
                     Velocity = RotatedVel.GetSafeNormal() * SlidingJumpBoost;
                 }
-                DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
+                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
             }
 
             SetMovementMode(MOVE_Falling);
@@ -68,7 +68,7 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
     FHitResult Hit(1.f);
     FCollisionQueryParams CollisionParams;
 
-    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, 1500), ECC_Visibility, CollisionParams);
+    bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() - FVector(0, 0, slidingLineTraceLength), ECC_Visibility, CollisionParams);
 
     if (bHit && !IsWalkable(Hit)) {
         // ### DEBUG UTILITIES ###
@@ -100,7 +100,16 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         
         // Apply acceleration to current velocity
         Velocity += Acceleration * deltaTime;
-        UE_LOG(LogTemp, Log, TEXT("Vel: %s"), *Velocity.ToString());
+
+        float DownwardVelDotP = FVector::DotProduct(DownwardVel.GetSafeNormal2D(), CharacterOwner->GetActorForwardVector());
+
+        if (DownwardVelDotP > 0)
+        {
+            bShouldBoostJump = true;
+        } else 
+        {
+            bShouldBoostJump = false;
+        }
         // Move
         FVector Adjusted = Velocity.GetClampedToMaxSize(MaxCustomMovementSpeed) * deltaTime;
 
@@ -117,6 +126,11 @@ bool UFPCharacterMovementComponent::CanAttemptJump() const
 	return IsJumpAllowed() &&
 		   !bWantsToCrouch &&
 		   (IsMovingOnGround() || IsFalling() || IsSliding()); // Falling included for double-jump and non-zero jump hold time, but validated by character.
+}
+
+bool UFPCharacterMovementComponent::GetShouldBoostJump() 
+{
+    return bShouldBoostJump;
 }
 
 bool UFPCharacterMovementComponent::IsSliding() const 
