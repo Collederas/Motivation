@@ -111,11 +111,12 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         /* Boosting jump should only happen if:
             - Player is facing relatively straight (ForwardDownwardDotP)
             - Player is not moving too much right/left (VelDownwardDotP)
+            - Current Velocity is not too big (else over a certain threshold we will almost glide)
         */
         float ForwardDownwardDotP = FVector::DotProduct(DownardVelNormalized, CharacterOwner->GetActorForwardVector());
         float VelDownwardDotP = FVector::DotProduct(DownardVelNormalized, Velocity.GetSafeNormal());
 
-        if (ForwardDownwardDotP > 0.5f && VelDownwardDotP > 0.8f)
+        if (ForwardDownwardDotP > 0.5f && VelDownwardDotP > 0.8f & Velocity.SizeSquared() <= FMath::Sqrt(FMath::Abs(MaxCustomMovementSpeed)/2))
         {
             bShouldBoostJump = true;
         } 
