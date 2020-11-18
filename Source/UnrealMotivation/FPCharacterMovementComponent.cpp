@@ -33,13 +33,19 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
                 // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + VelocityGroundProject, FColor::Emerald, false, 50.0f, 4.0f);
 
                 float VelDotProductGround = FVector::DotProduct(Velocity.GetSafeNormal(), VelocityGroundProject.GetSafeNormal());
+                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity.GetSafeNormal() * 1100, FColor::Green, false, 50.0f, 4.0f);
+                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + VelocityGroundProject.GetSafeNormal() * 1000, FColor::Red, false, 50.0f, 4.0f);
 
-                if (FMath::Acos(VelDotProductGround) > MaxJumpRotation && GetShouldBoostJump()){
-
-                    FVector RotatedVel = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(MaxJumpRotation), CharacterOwner->GetRootComponent()->GetRightVector());
-                    Velocity = RotatedVel.GetSafeNormal() * SlidingJumpBoost;
+                if (VelDotProductGround < SlidingJumpRotationClamp) 
+                {
+                    Velocity = Velocity.RotateAngleAxis(FMath::RadiansToDegrees(SlidingJumpRotationClamp), CharacterOwner->GetRootComponent()->GetRightVector());
                 }
-                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Red, false, 50.0f, 4.0f);
+                if (GetShouldBoostJump())
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("We never get here"));
+                    Velocity = Velocity * SlidingJumpBoostMultiplier;
+                }
+                // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Cyan, false, 50.0f, 4.0f);
             }
 
             SetMovementMode(MOVE_Falling);
@@ -77,9 +83,11 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         // ###
 
         FVector Normal2D = Hit.Normal.GetSafeNormal2D();
+
         // Basic "Piano inclinato" memories from high school
         // Adding gravity (DownVector) to the normal, results in a vector that is parallel to the plane.
         FVector DownwardVel = Normal2D + FVector::DownVector;
+        FVector DownardVelNormalized = DownwardVel.GetSafeNormal();
 
         // Then we project the character's current velocity onto the plane.
         Velocity = Velocity.ProjectOnTo(DownwardVel);
@@ -95,18 +103,24 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         FVector SlideAcceleration = FVector::VectorPlaneProject(Acceleration, Normal2D);
 
         // Prevent that pressing full back or forward moves the character right/left (right, Polar in Crash Bandicoot 4?)
-        float AccelDotP = FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal2D(), CharacterOwner->GetRootComponent()->GetRightVector()));
-        Acceleration = SlideAcceleration * AccelDotP * SlidingAccelerationControl;
+        float AccelRightDotP = FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal2D(), CharacterOwner->GetActorRightVector()));
+        Acceleration = SlideAcceleration * AccelRightDotP * SlidingAccelerationControl;
         
         // Apply acceleration to current velocity
         Velocity += Acceleration * deltaTime;
 
-        float DownwardVelDotP = FVector::DotProduct(DownwardVel.GetSafeNormal2D(), CharacterOwner->GetActorForwardVector());
+        /* Boosting jump should only happen if:
+            - Player is facing relatively straight (ForwardDownwardDotP)
+            - Player is not moving too much right/left (VelDownwardDotP)
+        */
+        float ForwardDownwardDotP = FVector::DotProduct(DownardVelNormalized, CharacterOwner->GetActorForwardVector());
+        float VelDownwardDotP = FVector::DotProduct(DownardVelNormalized, Velocity.GetSafeNormal());
 
-        if (DownwardVelDotP > 0)
+        if (ForwardDownwardDotP > 0.5f && VelDownwardDotP > 0.8f)
         {
             bShouldBoostJump = true;
-        } else 
+        } 
+        else 
         {
             bShouldBoostJump = false;
         }

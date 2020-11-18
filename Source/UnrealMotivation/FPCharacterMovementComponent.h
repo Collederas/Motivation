@@ -24,13 +24,13 @@ public:
 protected:
 
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-	float SlidingAccelerationControl;
+	float SlidingAccelerationControl = 30.f;
 	
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-    float MaxJumpRotation = 0.45f;
+    float SlidingJumpRotationClamp = 0.75f;
     
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-    float SlidingJumpBoost = 10000.f;
+    float SlidingJumpBoostMultiplier = 1;
 
 	// Natural sliding acceleration size (XY) 
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
