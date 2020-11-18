@@ -42,7 +42,6 @@ bool UFPCharacterMovementComponent::DoJump(bool bReplayingMoves)
                 }
                 if (GetShouldBoostJump())
                 {
-                    UE_LOG(LogTemp, Warning, TEXT("We never get here"));
                     Velocity = Velocity * SlidingJumpBoostMultiplier;
                 }
                 // DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + Velocity, FColor::Cyan, false, 50.0f, 4.0f);
