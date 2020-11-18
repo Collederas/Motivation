@@ -30,7 +30,7 @@ protected:
     float SlidingJumpRotationClamp = 0.75f;
     
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)
-    float SlidingJumpBoostMultiplier = 1;
+    FVector SlidingJumpBoostMultiplier = FVector(1.2f, 1.2f, 2.f);
 
 	// Natural sliding acceleration size (XY) 
 	UPROPERTY(Category = "Character Movement: Sliding / Falling", BlueprintReadWrite, EditAnywhere)

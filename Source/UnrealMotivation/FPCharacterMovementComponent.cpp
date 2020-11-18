@@ -115,13 +115,16 @@ void UFPCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations
         */
         float ForwardDownwardDotP = FVector::DotProduct(DownardVelNormalized, CharacterOwner->GetActorForwardVector());
         float VelDownwardDotP = FVector::DotProduct(DownardVelNormalized, Velocity.GetSafeNormal());
-
-        if (ForwardDownwardDotP > 0.5f && VelDownwardDotP > 0.8f & Velocity.SizeSquared() <= FMath::Sqrt(FMath::Abs(MaxCustomMovementSpeed)/2))
+        
+        if (ForwardDownwardDotP > 0.52f && VelDownwardDotP > 0.8f && Velocity.SizeSquared() <= FMath::Square(MaxCustomMovementSpeed))
         {
+            UE_LOG(LogTemp, Log, TEXT("BOOST ZONE"));
             bShouldBoostJump = true;
         } 
         else 
         {
+            UE_LOG(LogTemp, Log, TEXT("NonBOOST ZONE"));
+
             bShouldBoostJump = false;
         }
         // Move
